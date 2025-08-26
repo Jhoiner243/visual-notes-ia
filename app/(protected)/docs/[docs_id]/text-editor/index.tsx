@@ -2,6 +2,8 @@
 
 import { useCompletion } from "@ai-sdk/react";
 import React from "react";
+import { cn } from "../../../../../lib/utils";
+import AiSidebarRigth from "./ai-sidebar-rigth";
 import { parseCompletion } from "./parse-comletion";
 
 interface TextEditorProps {
@@ -24,14 +26,14 @@ export const TextEditor = ({
 
   // Utilidad para autocompletar texto en el editor
   const {completion, input, setInput, handleSubmit, stop, setCompletion} = useCompletion({
-    api: `${process.env.NEXT_API_URL}/v1/completion/notes/${documentId}/autocomplete`,
+    api: `${process.env.NEXT_PUBLIC_API_URL}/v1/completion/notes/${documentId}/autocomplete`,
     initialInput: initialContent,
     body: {
-      prompt: initialContent,
+      prompt: lastManualInput,
       context: 'autocomplete',
     }
   })
-
+  console.log('Completion', completion)
   //Validación de activación/desactivación de autocompletar
   React.useEffect(() => {
     if(!isAutoCompleteEnabled){
@@ -88,15 +90,30 @@ export const TextEditor = ({
       setCursorPosition(nextCursorPosition)
   }
   return(
-    <div>
-      <h1>Text Editor</h1>
+    <div className="relative flex h-full w-full bg-background">
+
+
+<div className="group/sidebar-wrapper has-[data-side=right]:ml-0">
+
+      <AiSidebarRigth 
+      content="Hola"
+      isEnabled={true}
+      onPendingUpdate={(update) => {
+        console.log('Update', update)
+      }}
+    />
+    
+      </div>
       <textarea 
       ref={editorRef} 
       onKeyDown={handleKeyDown} 
       onChange={handleInput}
       value={input}
       placeholder="Escribe aquí tu texto..."
-      
+      className={cn(
+        "h-[calc(100%-2rem)] w-full flex-1 resize-none whitespace-pre-wrap bg-transparent px-8 font-serif text-base outline-none placeholder:text-muted-foreground/50",
+
+      )}
       />
     </div>
   )

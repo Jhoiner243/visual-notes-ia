@@ -25,13 +25,20 @@ export const TextEditor = ({
   const [lastManualInput, setLastManualInput] = React.useState<string | null>(null)
 
   // Utilidad para autocompletar texto en el editor
-  const {completion, input, setInput, handleSubmit, stop, setCompletion} = useCompletion({
+  const {completion, input, setInput, handleSubmit, stop, setCompletion, handleInputChange} = useCompletion({
     api: `${process.env.NEXT_PUBLIC_API_URL}/v1/completion/notes/${documentId}/autocomplete`,
     initialInput: initialContent,
     body: {
       prompt: lastManualInput,
       context: 'autocomplete',
-    }
+    },
+    experimental_throttle: 50,
+    onFinish: (prompt: string, completion: string) => {
+      console.log('Finished streaming completion:', completion, prompt)
+    },
+    onError: (error: Error) => {
+      console.error('An error occurred:', error)
+    },
   })
   console.log('Completion', completion)
   //Validación de activación/desactivación de autocompletar
@@ -93,17 +100,7 @@ export const TextEditor = ({
     <div className="relative flex h-full w-full bg-background">
 
 
-<div className="group/sidebar-wrapper has-[data-side=right]:ml-0">
 
-      <AiSidebarRigth 
-      content="Hola"
-      isEnabled={true}
-      onPendingUpdate={(update) => {
-        console.log('Update', update)
-      }}
-    />
-    
-      </div>
       <textarea 
       ref={editorRef} 
       onKeyDown={handleKeyDown} 
@@ -115,6 +112,18 @@ export const TextEditor = ({
 
       )}
       />
+
+<div className="group/sidebar-wrapper has-[data-side=right]:ml-0">
+
+<AiSidebarRigth 
+content="Hola"
+isEnabled={true}
+onPendingUpdate={(update) => {
+  console.log('Update', update)
+}}
+/>
+
+</div>
     </div>
   )
 }
